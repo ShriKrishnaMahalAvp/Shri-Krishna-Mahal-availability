@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shri Krishna Mahal</title>
+
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="Shri Krishna Mahal - Gallery & Availability">
+    <meta property="og:description" content="View our gallery and check booking availability.">
+    <meta property="og:type" content="website">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- External Tools -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Global Configuration -->
+    <script>
+        const CONFIG = {
+            // Gallery Config
+            galleryUrl: 'https://script.google.com/macros/s/AKfycby7edmZEdORBU1V0bSrEXVgburwsEyT0McVst3OZFxJOQbzVYu26DoU-38FPIVKdA3I/exec',
+            
+            // Calendar Config
+            calendarTitle: "Availability Checker - Shri Krishna Mahal",
+            calendarIcsUrl: "https://calendar.google.com/calendar/ical/f7beb684c4719068f5e4886e5da04969ea34a1b266eebae19781b361b513bca9%40group.calendar.google.com/public/basic.ics"
+        };
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, .royal-font { font-family: 'Playfair Display', serif; }
+
+        /* Minimal Custom CSS */
+        .custom-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f5f5f4; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 10px; }
+        .smooth-scroll { scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+        /* Hide scrollbar for gallery but keep functionality */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .wheel-container { padding-top: 34px; padding-bottom: 34px; }
+        .wheel-item { height: 28px; display: flex; align-items: center; justify-content: center; scroll-snap-align: center; cursor: pointer; transition: all 0.2s; }
+        .wheel-item.selected { color: #d97706; font-weight: bold; transform: scale(1.1); }
+        .header-text-shadow { text-shadow: 0 4px 6px rgba(0,0,0,0.5); }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .spinner { animation: spin 1s linear infinite; }
+    </style>
+</head>
+<body class="bg-stone-100 font-sans text-stone-800 min-h-screen flex flex-col items-center pt-[76px] pb-32 gap-6 overflow-y-auto overscroll-none">
+
+
+    <!-- ==========================================
+         STICKY FLOATING HERO HEADER
+         ========================================== -->
+    <header class="fixed top-0 left-0 right-0 md:max-w-3xl md:mx-auto z-50 bg-stone-900 shadow-2xl border border-stone-800/50 backdrop-blur-md bg-opacity-95 rounded-b-3xl">
+        <div class="px-4 py-3 text-center">
+            <h1 class="text-2xl md:text-3xl font-bold text-amber-500 tracking-wide royal-font header-text-shadow">
+                Shri Krishna Mahal
+            </h1>
+            <p class="text-stone-400 text-[10px] md:text-xs uppercase tracking-[0.2em] mt-0.5">Royal Grand Hall</p>
+        </div>
+    </header>
+
+    <!-- ==========================================
+         SECTION 1: GALLERY (Unified Card Style)
+         ========================================== -->
+    <section class="w-full max-w-2xl px-4">
+        <!-- Gallery Card -->
+        <div class="bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden">
+            
+            <!-- Gallery Header -->
+            <div class="bg-stone-800 p-3 text-white flex justify-between items-center">
+                <span class="text-sm font-medium text-stone-300 px-2 flex items-center gap-2">
+                    <i class="ph ph-image text-amber-500"></i> Photo Gallery
+                </span>
+                <!-- Loading Spinner (Small, in header) -->
+                <div id="gallery-header-spinner" class="hidden">
+                    <div class="spinner w-4 h-4 border-2 border-stone-600 border-t-amber-500 rounded-full"></div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-4 bg-stone-50">
+                <!-- Gallery Loading State (Initial) -->
+                <div id="gallery-loading" class="flex flex-col items-center gap-3 py-12 text-stone-500">
+                    <div class="spinner w-8 h-8 border-4 border-gray-200 border-t-amber-600 rounded-full"></div>
+                    <span class="text-sm font-medium">Loading moments...</span>
+                </div>
+
+                <!-- Gallery Container -->
+                <div class="w-full relative group">
+                    <!-- Scroll Indicator Overlay -->
+                    <div id="scroll-hint" class="absolute top-1/2 right-4 z-10 text-white bg-stone-900/50 backdrop-blur-sm p-2 rounded-full pointer-events-none animate-pulse hidden border border-white/20">
+                        <i class="ph ph-caret-right text-xl"></i>
+                    </div>
+
+                    <!-- Horizontal Scroll Area -->
+                    <div id="gallery-container" class="flex overflow-x-auto snap-x snap-mandatory gap-4 w-full no-scrollbar rounded-lg pb-2 hidden">
+                        <!-- Items injected via JS -->
+                    </div>
+                    
+                    <p class="text-[10px] uppercase tracking-wider text-center text-stone-400 mt-2 flex items-center justify-center gap-1">
+                        <i class="ph ph-hand-swipe-left"></i> Swipe to explore
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ==========================================
+         SECTION 2: CALENDAR CHECKER
+         ========================================== -->
+    <section class="w-full max-w-2xl px-4">
+        <div class="bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden">
+            
+            <!-- HEADER -->
+            <div class="bg-stone-800 p-3 text-white">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium text-stone-300 px-2 flex items-center gap-2">
+                         <i class="ph ph-calendar-check text-amber-500"></i> 
+                    </span>
+                    <div class="relative flex items-center gap-2">
+                        <button id="datePickerBtn" onclick="toggleDatePicker()" class="flex items-center gap-2 bg-stone-700 hover:bg-stone-600 text-white text-sm px-3 py-1.5 rounded border border-stone-600 transition-colors focus:outline-none focus:border-amber-500 shadow-sm">
+                            <i class="ph ph-calendar"></i>
+                            <span id="datePickerBtnText">Check Date</span>
+                            <i class="ph ph-caret-down text-xs text-stone-400"></i>
+                        </button>
+                        <span id="quickDateStatus" class="hidden text-sm font-medium px-2 py-1 rounded bg-stone-700 ml-2 shadow-sm border border-stone-600"></span>
+
+                        <!-- Wheel Popover -->
+                        <div id="dateWheelPopover" class="absolute top-full right-0 mt-2 bg-white shadow-2xl rounded-xl p-3 z-50 hidden border border-stone-100 w-56 text-stone-800 ring-1 ring-black ring-opacity-5">
+                            <div class="flex justify-between items-center mb-2 pb-2 border-b border-stone-100">
+                                <span class="text-xs font-bold text-stone-400 uppercase tracking-wider">Select Date</span>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="checkWheelDate()" class="text-emerald-500 hover:text-emerald-600 p-1 rounded hover:bg-emerald-50 transition-colors">
+                                        <i class="ph ph-check text-lg"></i>
+                                    </button>
+                                    <button onclick="toggleDatePicker()" class="text-stone-400 hover:text-stone-600 p-1 rounded hover:bg-stone-100 transition-colors">
+                                        <i class="ph ph-x text-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 h-24 relative">
+                                <div class="absolute top-1/2 left-0 w-full h-7 -mt-3.5 bg-amber-50 rounded pointer-events-none border-y border-amber-100"></div>
+                                <div id="wheelDay" class="flex-1 overflow-y-auto snap-y snap-mandatory no-scrollbar text-center wheel-container relative z-10"></div>
+                                <div id="wheelMonth" class="flex-1 overflow-y-auto snap-y snap-mandatory no-scrollbar text-center wheel-container relative z-10"></div>
+                                <div id="wheelYear" class="flex-1 overflow-y-auto snap-y snap-mandatory no-scrollbar text-center wheel-container relative z-10"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIDEBAR: Horizontal Scroll List -->
+            <!-- Changed layout to flex for better scrolling -->
+            <div id="sidebarList" class="flex gap-3 overflow-x-auto custom-scroll p-4 bg-stone-50 snap-x snap-mandatory smooth-scroll transition-opacity duration-300 min-h-[100px]">
+                
+                <div class="w-full flex items-center justify-center py-8 text-stone-400">
+                    <i class="ph ph-spinner animate-spin text-2xl mr-2"></i>
+                    <span>Loading calendar...</span>
+                </div>
+            </div>
+
+            <!-- CALENDAR GRID VIEW -->
+            <div id="calendarSection" class="hidden opacity-0 p-4 bg-white border-t border-gray-100 relative transition-opacity duration-300">
+                <button onclick="closeCalendar()" class="absolute top-3 right-3 text-stone-400 hover:text-stone-600 p-1 rounded-full hover:bg-stone-100 z-10">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+                
+                <div class="flex justify-center items-center gap-3 mb-3 h-8">
+                    <button onclick="changeMonth(-1)" class="p-1 hover:bg-stone-100 border border-stone-200 w-8 h-8 flex items-center justify-center rounded transition-colors">
+                        <i class="ph ph-caret-left text-lg"></i>
+                    </button>
+                    <div class="text-center min-w-[140px]">
+                        <h2 id="currentMonthLabel" class="text-base font-bold text-stone-800 royal-font">Loading...</h2>
+                    </div>
+                    <button onclick="changeMonth(1)" class="p-1 hover:bg-stone-100 border border-stone-200 w-8 h-8 flex items-center justify-center rounded transition-colors">
+                        <i class="ph ph-caret-right text-lg"></i>
+                    </button>
+                </div>
+
+                <div class="rounded-lg overflow-hidden border border-stone-200">
+                    <div class="grid grid-cols-7 gap-px bg-stone-200 border-b">
+                        <div class="bg-stone-50 py-1 text-center text-[10px] font-bold text-stone-500 uppercase">Sun</div>
+                        <div class="bg-stone-50 py-1 text-center text-[10px] font-bold text-stone-500 uppercase">Mon</div>
+                        <div class="bg-stone-50 py-1 text-center text-[10px] font-bold text-stone-500 uppercase">Tue</div>
+                        <div class="bg-stone-50 py-1 text-center text-[10px] font-bold text-stone-500 uppercase">Wed</div>
+                        <div class="bg-stone-50 py-1 text-center text-[10px] font-bold text-stone-500 uppercase">Thu</div>
+                        <div class="bg-stone-50 py-1 text-center text-[10px] font-bold text-stone-500 uppercase">Fri</div>
+                        <div class="bg-stone-50 py-1 text-center text-[10px] font-bold text-stone-500 uppercase">Sat</div>
+                    </div>
+                    <div id="calendarDays" class="grid grid-cols-7 gap-px bg-stone-200"></div>
+                </div>
+
+                <div class="mt-3 flex flex-wrap justify-center gap-4 text-xs border-t border-stone-100 pt-3">
+                    <div class="flex items-center gap-1.5"><div class="w-3 h-3 bg-white border border-stone-200 rounded-sm"></div><span>Available</span></div>
+                    <div class="flex items-center gap-1.5"><div class="w-3 h-3 bg-orange-50 border border-orange-100 rounded-sm"></div><span>Booked</span></div>
+                    <div class="flex items-center gap-1.5"><div class="w-3 h-3 bg-stone-100 rounded-sm"></div><span>Past</span></div>
+                </div>
+                <p class="text-[10px] text-stone-400 text-center mt-2 italic">Updated upto June 2026</p>
+            </div>
+
+            <div id="viewCalendarBtnContainer" class="p-3 bg-white border-t border-gray-100">
+                <p class="text-[10px] text-stone-400 text-center mb-2 italic">Updated upto June 2026</p>
+                <button onclick="openCalendar()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded-lg shadow-md flex items-center justify-center gap-2 text-sm transition-all border border-amber-700">
+                    <i class="ph ph-calendar-check text-lg"></i>
+                    View Full Calendar
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         STICKY FOOTER
+         ========================================== -->
+    <footer class="fixed bottom-0 left-0 right-0 z-50 bg-stone-900 text-stone-300 py-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] border-t border-stone-800">
+        <div class="max-w-7xl mx-auto px-2 flex flex-row flex-nowrap justify-center items-center gap-3 text-[10px] sm:text-xs md:text-sm whitespace-nowrap overflow-hidden">
+            <a href="tel:9965138000" class="flex items-center gap-1.5 hover:text-amber-500 transition-colors flex-shrink-0">
+                <div class="bg-stone-800 p-1 rounded-full text-amber-500">
+                    <i class="ph ph-phone-call"></i>
+                </div>
+                <span class="font-medium">9965138000</span>
+            </a>
+            
+            <a href="https://maps.app.goo.gl/2wZjXj34gti6WGGd7" target="_blank" class="flex items-center gap-1.5 hover:text-amber-500 transition-colors flex-shrink-1 truncate">
+                <div class="bg-stone-800 p-1 rounded-full text-amber-500 flex-shrink-0">
+                    <i class="ph ph-map-pin"></i>
+                </div>
+                <span class="truncate">Kangayam Road, Avinashipalayam</span>
+            </a>
+        </div>
+    </footer>
+
+    <!-- LOGIC -->
+    <script>
+        // ==========================================
+        // SHARED INITIALIZATION
+        // ==========================================
+        let currentMonth = 0; // January
+        let currentYear = 2026;
+        let allEvents = [];
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchImages();
+            fetchCalendarData();
+            initWheelPicker();
+
+            // Click listener to close popups
+            window.addEventListener('click', (e) => {
+                const wheel = document.getElementById('dateWheelPopover');
+                const btn = document.getElementById('datePickerBtn');
+                if (!wheel.contains(e.target) && !btn.contains(e.target)) {
+                    wheel.classList.add('hidden');
+                }
+            });
+        });
+
+
+        // ==========================================
+        // GALLERY LOGIC (UPDATED COLORS)
+        // ==========================================
+        async function fetchImages() {
+            const galleryContainer = document.getElementById('gallery-container');
+            const galleryLoading = document.getElementById('gallery-loading');
+            const scrollHint = document.getElementById('scroll-hint');
+            const apiUrl = `${CONFIG.galleryUrl}?json=true`;
+
+            try {
+                const response = await fetch(apiUrl, { method: 'GET', redirect: 'follow', credentials: 'omit' });
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                
+                const images = await response.json();
+                galleryLoading.style.display = 'none';
+                galleryContainer.classList.remove('hidden');
+
+                if (images.length === 0) {
+                    galleryContainer.innerHTML = '<div class="w-full text-center p-8 text-stone-400">No images found.</div>';
+                    return;
+                }
+                
+                if (images.length > 1) {
+                    scrollHint.classList.remove('hidden');
+                }
+
+                images.forEach(image => {
+                    // Wrapper for Snap alignment (100% width)
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'min-w-full snap-center flex flex-col'; 
+                    
+                    const card = document.createElement('div');
+                    card.className = 'bg-stone-100 rounded-lg overflow-hidden flex flex-col cursor-pointer group relative shadow-inner';
+                    card.onclick = () => window.open(image.url, '_blank');
+
+                    // Image
+                    const img = document.createElement('img');
+                    img.src = image.url;
+                    img.referrerPolicy = "no-referrer";
+                    img.alt = image.name;
+                    img.loading = "lazy";
+                    // Taller height for single image view
+                    img.className = "w-full h-80 sm:h-96 object-contain bg-stone-200";
+
+                    // Info Overlay
+                    const info = document.createElement('div');
+                    info.className = 'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-stone-900/90 to-transparent p-4 text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300';
+                    info.textContent = image.name;
+
+                    card.appendChild(img);
+                    card.appendChild(info);
+                    wrapper.appendChild(card);
+                    galleryContainer.appendChild(wrapper);
+                });
+
+            } catch (error) {
+                console.error('Gallery Error:', error);
+                galleryLoading.innerHTML = `
+                    <div class="text-red-600 bg-red-50 p-4 rounded-lg text-center w-full border border-red-100">
+                        <strong>Failed to load gallery</strong><br>
+                        <span class="text-sm">${error.message}</span>
+                    </div>`;
+            }
+        }
+
+
+        // ==========================================
+        // CALENDAR LOGIC (ROBUST FETCH)
+        // ==========================================
+        const sidebarList = document.getElementById('sidebarList');
+        const calendarSection = document.getElementById('calendarSection');
+        const viewCalendarBtnContainer = document.getElementById('viewCalendarBtnContainer');
+        const quickDateStatus = document.getElementById('quickDateStatus');
+        const dateWheelPopover = document.getElementById('dateWheelPopover');
+        const datePickerBtnText = document.getElementById('datePickerBtnText');
+
+        async function fetchCalendarData() {
+            // List of CORS proxies to try in order
+            const proxies = [
+                // 1. AllOrigins (Stable)
+                (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}&t=${Date.now()}`,
+                // 2. CodeTabs (Good Fallback)
+                (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+                // 3. CorsProxy.io (Backup)
+                (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`
+            ];
+
+            for (const proxyGenerator of proxies) {
+                try {
+                    const url = proxyGenerator(CONFIG.calendarIcsUrl);
+                    console.log(`Fetching calendar via: ${url.substring(0, 30)}...`);
+                    
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    const icsData = await response.text();
+                    
+                    // Basic validation
+                    if (!icsData.includes('BEGIN:VCALENDAR')) {
+                        throw new Error('Invalid ICS data');
+                    }
+
+                    parseICS(icsData);
+                    return; // Success, stop trying proxies
+                } catch (error) {
+                    console.warn(`Proxy failed: ${error.message}`);
+                    continue; // Try next proxy
+                }
+            }
+
+            // All failed
+            console.error('All calendar fetch attempts failed.');
+            sidebarList.innerHTML = `
+                <div class="col-span-full text-center py-8 text-stone-400">
+                    <p>Failed to load calendar.</p>
+                    <button onclick="fetchCalendarData()" class="mt-2 text-amber-600 font-bold text-sm hover:underline">Tap to Retry</button>
+                </div>`;
+        }
+
+        function parseICS(data) {
+            try {
+                const jcalData = ICAL.parse(data);
+                const comp = new ICAL.Component(jcalData);
+                const vevents = comp.getAllSubcomponents('vevent');
+                allEvents = vevents.map(event => {
+                    const eventObj = new ICAL.Event(event);
+                    return { startDate: eventObj.startDate.toJSDate() };
+                });
+                updateUI();
+            } catch (e) { console.error('Parse error:', e); }
+        }
+
+        function updateUI() {
+            renderSidebar();
+            renderCalendar(currentMonth, currentYear);
+        }
+
+        function renderSidebar() {
+            sidebarList.innerHTML = '';
+            const now = new Date();
+            now.setHours(0,0,0,0);
+            
+            const futureEvents = allEvents
+                .filter(e => e.startDate >= now)
+                .sort((a, b) => a.startDate - b.startDate)
+                .slice(0, 50); // Increased slice from 10 to 50
+
+            if (futureEvents.length === 0) {
+                sidebarList.innerHTML = `<div class="w-full text-center py-8 text-stone-400 flex items-center justify-center italic">No upcoming bookings found.</div>`;
+                return;
+            }
+
+            futureEvents.forEach(event => {
+                const dateObj = event.startDate;
+                const mName = dateObj.toLocaleString('default', { month: 'short' });
+                const dNum = dateObj.getDate();
+                const dName = dateObj.toLocaleString('default', { weekday: 'long' });
+
+                const card = document.createElement('div');
+                // Decreased padding to p-1.5 for reduced height, maintained flex-shrink-0
+                card.className = 'w-24 bg-white p-2 rounded-lg border border-stone-200 shadow-sm snap-start hover:shadow-md transition-shadow relative overflow-hidden group flex-shrink-0';
+                
+                card.innerHTML = `
+                    <div class="absolute top-0 right-0 w-8 h-8 bg-amber-500/5 rounded-bl-full -mr-4 -mt-4"></div>
+                    <!-- Moved lock icon to right using justify-between -->
+                    <div class="flex items-center justify-between mb-0.5 relative z-10">
+                        <div class="bg-stone-100 text-stone-600 rounded px-1 py-0.5 text-[8px] font-bold uppercase border border-stone-200">Booked</div>
+                        <i class="ph ph-lock-key text-stone-300 text-[10px]"></i>
+                    </div>
+                    <div class="flex items-center gap-1.5 relative z-10">
+                        <span class="text-2xl font-bold text-stone-800 leading-none font-sans">${dNum}</span>
+                        <div class="flex flex-col justify-center leading-none">
+                            <span class="text-[10px] font-bold text-amber-600 uppercase">${mName}</span>
+                            <span class="text-[8px] font-medium text-stone-400 uppercase mt-0.5">${dName.substring(0, 3)}</span>
+                        </div>
+                    </div>
+                `;
+                sidebarList.appendChild(card);
+            });
+        }
+
+        function openCalendar() {
+            sidebarList.classList.add('opacity-0');
+            viewCalendarBtnContainer.classList.add('opacity-0');
+            setTimeout(() => {
+                sidebarList.classList.add('hidden');
+                viewCalendarBtnContainer.classList.add('hidden');
+                calendarSection.classList.remove('hidden');
+                renderCalendar(currentMonth, currentYear);
+                setTimeout(() => calendarSection.classList.remove('opacity-0'), 10);
+            }, 300);
+        }
+
+        function closeCalendar() {
+            calendarSection.classList.add('opacity-0');
+            setTimeout(() => {
+                calendarSection.classList.add('hidden');
+                sidebarList.classList.remove('hidden');
+                viewCalendarBtnContainer.classList.remove('hidden');
+                setTimeout(() => {
+                    sidebarList.classList.remove('opacity-0');
+                    viewCalendarBtnContainer.classList.remove('opacity-0');
+                }, 10);
+            }, 300);
+        }
+
+        function changeMonth(direction) {
+            let newMonth = currentMonth + direction;
+            let newYear = currentYear;
+
+            if (newMonth > 11) { newMonth = 0; newYear++; } 
+            else if (newMonth < 0) { newMonth = 11; newYear--; }
+
+            if (newYear !== 2026) return;
+            if (newMonth < 0 || newMonth > 5) return;
+
+            currentMonth = newMonth;
+            currentYear = newYear;
+            renderCalendar(currentMonth, currentYear);
+        }
+
+        function renderCalendar(month, year) {
+            const container = document.getElementById('calendarDays');
+            const label = document.getElementById('currentMonthLabel');
+            const fullMonthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            
+            label.innerText = `${fullMonthNames[month]} ${year}`;
+            container.innerHTML = '';
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = "bg-stone-50/50 h-9";
+                container.appendChild(emptyCell);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const isPast = date < today;
+                const isBooked = allEvents.some(event => {
+                    const eStart = new Date(event.startDate);
+                    eStart.setHours(0,0,0,0);
+                    return date.getTime() === eStart.getTime();
+                });
+
+                const cell = document.createElement('div');
+                let cellClasses = "h-9 flex items-center justify-center relative group text-sm font-semibold transition-colors";
+                
+                if (isPast) {
+                    cellClasses += " bg-stone-100 text-stone-300 cursor-not-allowed";
+                } else if (isBooked) {
+                    cellClasses += " bg-orange-50 text-orange-800 cursor-default font-bold";
+                } else {
+                    cellClasses += " bg-white hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer text-stone-700";
+                }
+
+                cell.className = cellClasses;
+                cell.innerHTML = `<span>${day}</span>`;
+                container.appendChild(cell);
+            }
+        }
+
+        // --- WHEEL PICKER LOGIC ---
+        let wheelDebounce;
+
+        function initWheelPicker() {
+            const today = new Date();
+            populateWheel('wheelMonth', 0, 11, today.getMonth(), monthNames);
+            populateWheel('wheelYear', today.getFullYear(), today.getFullYear() + 2, today.getFullYear());
+            updateDaysWheel(true);
+
+            ['wheelDay', 'wheelMonth', 'wheelYear'].forEach(id => {
+                const el = document.getElementById(id);
+                el.addEventListener('scroll', () => {
+                    const index = Math.round(el.scrollTop / 28);
+                    updateWheelSelection(el, index);
+                    if (id !== 'wheelDay') {
+                        clearTimeout(wheelDebounce);
+                        wheelDebounce = setTimeout(() => updateDaysWheel(), 150);
+                    }
+                });
+            });
+        }
+
+        function updateDaysWheel(force = false) {
+            const mEl = document.getElementById('wheelMonth');
+            const yEl = document.getElementById('wheelYear');
+            const dEl = document.getElementById('wheelDay');
+
+            const mIndex = Math.round(mEl.scrollTop / 28);
+            const month = (mEl.children[mIndex]) ? parseInt(mEl.children[mIndex].dataset.value) : 0;
+
+            const yIndex = Math.round(yEl.scrollTop / 28);
+            const year = (yEl.children[yIndex]) ? parseInt(yEl.children[yIndex].dataset.value) : new Date().getFullYear();
+
+            const maxDays = new Date(year, month + 1, 0).getDate();
+
+            const dIndex = Math.round(dEl.scrollTop / 28);
+            let currentDay = (dEl.children[dIndex]) ? parseInt(dEl.children[dIndex].dataset.value) : 1;
+
+            if (!force && dEl.children.length === maxDays) return;
+
+            if (currentDay > maxDays) currentDay = maxDays;
+            if (currentDay < 1) currentDay = 1;
+
+            populateWheel('wheelDay', 1, maxDays, currentDay);
+        }
+
+        function populateWheel(elementId, start, end, selected, labels = null) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            let index = 0;
+            for (let i = start; i <= end; i++) {
+                const div = document.createElement('div');
+                div.className = 'wheel-item text-stone-500';
+                div.textContent = labels ? labels[i] : i;
+                div.dataset.value = i;
+                container.appendChild(div);
+                if (i === selected) {
+                    setTimeout(() => { 
+                        container.scrollTop = index * 28; 
+                        updateWheelSelection(container, index); 
+                    }, 0);
+                }
+                index++;
+            }
+        }
+
+        function updateWheelSelection(container, index) {
+            const items = container.getElementsByClassName('wheel-item');
+            for (let i = 0; i < items.length; i++) {
+                if (i === index) items[i].classList.add('selected');
+                else items[i].classList.remove('selected');
+            }
+        }
+
+        function toggleDatePicker() { dateWheelPopover.classList.toggle('hidden'); }
+
+        function checkWheelDate() {
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                const index = Math.round(el.scrollTop / 28);
+                return el.children[index] ? parseInt(el.children[index].dataset.value) : null;
+            };
+            const d = getVal('wheelDay'), m = getVal('wheelMonth'), y = getVal('wheelYear');
+            
+            if (d === null || m === null || y === null) return;
+
+            const date = new Date(y, m, d);
+            
+            datePickerBtnText.textContent = `${d} ${monthNames[m]} ${y}`;
+            toggleDatePicker();
+            quickDateStatus.classList.remove('hidden');
+            
+            const today = new Date(); today.setHours(0, 0, 0, 0); date.setHours(0, 0, 0, 0);
+            const isPast = date < today;
+            const isBooked = allEvents.some(e => {
+                const eStart = new Date(e.startDate); eStart.setHours(0, 0, 0, 0);
+                return date.getTime() === eStart.getTime();
+            });
+
+            if (isPast) {
+                quickDateStatus.textContent = 'Past';
+                quickDateStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-stone-500 text-white ml-2';
+            } else if (isBooked) {
+                quickDateStatus.textContent = 'Booked';
+                quickDateStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-orange-500 text-white ml-2';
+            } else {
+                quickDateStatus.textContent = 'Available';
+                quickDateStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-emerald-500 text-white ml-2';
+            }
+        }
+    </script>
+</body>
+</html>
