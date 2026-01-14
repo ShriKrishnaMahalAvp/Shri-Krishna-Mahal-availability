@@ -537,7 +537,7 @@
         function initWheelPicker() {
             const today = new Date();
             populateWheel('wheelMonth', 0, 11, today.getMonth(), monthNames);
-            populateWheel('wheelYear', today.getFullYear(), today.getFullYear() + 2, today.getFullYear());
+            populateWheel('wheelYear', today.getFullYear(), 2026, today.getFullYear());
             updateDaysWheel(true);
 
             ['wheelDay', 'wheelMonth', 'wheelYear'].forEach(id => {
@@ -547,10 +547,29 @@
                     updateWheelSelection(el, index);
                     if (id !== 'wheelDay') {
                         clearTimeout(wheelDebounce);
-                        wheelDebounce = setTimeout(() => updateDaysWheel(), 150);
+                        wheelDebounce = setTimeout(() => {
+                            validateMonthLimit();
+                            updateDaysWheel();
+                        }, 150);
                     }
                 });
             });
+        }
+
+        function validateMonthLimit() {
+            const yEl = document.getElementById('wheelYear');
+            const mEl = document.getElementById('wheelMonth');
+            const yIndex = Math.round(yEl.scrollTop / 28);
+            const year = (yEl.children[yIndex]) ? parseInt(yEl.children[yIndex].dataset.value) : 0;
+
+            if (year === 2026) {
+                const mIndex = Math.round(mEl.scrollTop / 28);
+                const month = (mEl.children[mIndex]) ? parseInt(mEl.children[mIndex].dataset.value) : 0;
+                if (month > 5) { // June is 5
+                    mEl.scrollTop = 5 * 28;
+                    updateWheelSelection(mEl, 5);
+                }
+            }
         }
 
         function updateDaysWheel(force = false) {
@@ -644,4 +663,3 @@
     </script>
 </body>
 </html>
-
