@@ -57,8 +57,8 @@
 
 
     <!-- ==========================================
-         STICKY FLOATING HERO HEADER
-         ========================================== -->
+          STICKY FLOATING HERO HEADER
+          ========================================== -->
     <header class="fixed top-0 left-0 right-0 md:max-w-3xl md:mx-auto z-50 bg-stone-900 shadow-2xl border border-stone-800/50 backdrop-blur-md bg-opacity-95 rounded-b-3xl">
         <div class="px-4 py-3 text-center">
             <h1 class="text-2xl md:text-3xl font-bold text-amber-500 tracking-wide royal-font header-text-shadow">
@@ -69,8 +69,8 @@
     </header>
 
     <!-- ==========================================
-         SECTION 1: GALLERY (Unified Card Style)
-         ========================================== -->
+          SECTION 1: GALLERY (Unified Card Style)
+          ========================================== -->
     <section class="w-full max-w-2xl px-4">
         <!-- Gallery Card -->
         <div class="bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden">
@@ -116,8 +116,8 @@
 
 
     <!-- ==========================================
-         SECTION 2: CALENDAR CHECKER
-         ========================================== -->
+          SECTION 2: CALENDAR CHECKER
+          ========================================== -->
     <section class="w-full max-w-2xl px-4">
         <div class="bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden">
             
@@ -160,7 +160,6 @@
             </div>
 
             <!-- SIDEBAR: Horizontal Scroll List -->
-            <!-- Changed layout to flex for better scrolling -->
             <div id="sidebarList" class="flex gap-3 overflow-x-auto custom-scroll p-4 bg-stone-50 snap-x snap-mandatory smooth-scroll transition-opacity duration-300 min-h-[100px]">
                 
                 <div class="w-full flex items-center justify-center py-8 text-stone-400">
@@ -219,8 +218,8 @@
     </section>
 
     <!-- ==========================================
-         STICKY FOOTER
-         ========================================== -->
+          STICKY FOOTER
+          ========================================== -->
     <footer class="fixed bottom-0 left-0 right-0 z-50 bg-stone-900 text-stone-300 py-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] border-t border-stone-800">
         <div class="max-w-7xl mx-auto px-2 flex flex-row flex-nowrap justify-center items-center gap-3 text-[10px] sm:text-xs md:text-sm whitespace-nowrap overflow-hidden">
             <a href="tel:9965138000" class="flex items-center gap-1.5 hover:text-amber-500 transition-colors flex-shrink-0">
@@ -244,10 +243,10 @@
         // ==========================================
         // SHARED INITIALIZATION
         // ==========================================
-        let currentMonth = 0; // January
-        let currentYear = 2026;
+        let currentMonth = new Date().getMonth(); 
+        let currentYear = new Date().getFullYear();
         let allEvents = [];
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchImages();
@@ -478,9 +477,12 @@
             if (newMonth > 11) { newMonth = 0; newYear++; } 
             else if (newMonth < 0) { newMonth = 11; newYear--; }
 
-            if (newYear !== 2026) return;
-            if (newMonth < 0 || newMonth > 5) return;
-
+            // Allow navigation to past in Grid View for reference, or restrict?
+            // Current Logic: Restrict prior to "Now" in Grid View too? 
+            // Let's keep grid view flexible but ensure "Update upto June 2026" logic holds
+            
+            if (newYear > 2026) return; // Cap at 2026
+            
             currentMonth = newMonth;
             currentYear = newYear;
             renderCalendar(currentMonth, currentYear);
@@ -531,89 +533,160 @@
             }
         }
 
-        // --- WHEEL PICKER LOGIC ---
+        // ==========================================
+        // DYNAMIC WHEEL PICKER LOGIC (NO PAST DATES)
+        // ==========================================
         let wheelDebounce;
 
         function initWheelPicker() {
             const today = new Date();
-            populateWheel('wheelMonth', 0, 11, today.getMonth(), monthNames);
-            populateWheel('wheelYear', today.getFullYear(), 2026, today.getFullYear());
-            updateDaysWheel(true);
+            const tYear = today.getFullYear();
+            const tMonth = today.getMonth();
+            const tDay = today.getDate();
 
-            ['wheelDay', 'wheelMonth', 'wheelYear'].forEach(id => {
-                const el = document.getElementById(id);
-                el.addEventListener('scroll', () => {
-                    const index = Math.round(el.scrollTop / 28);
-                    updateWheelSelection(el, index);
-                    if (id !== 'wheelDay') {
-                        clearTimeout(wheelDebounce);
-                        wheelDebounce = setTimeout(() => {
-                            validateMonthLimit();
-                            updateDaysWheel();
-                        }, 150);
-                    }
-                });
+            // 1. Populate Years (Start from Current Year)
+            populateWheel('wheelYear', tYear, 2026, tYear);
+
+            // 2. Populate Months (Since Year is current, start from tMonth)
+            populateWheel('wheelMonth', tMonth, 11, tMonth, monthNames);
+
+            // 3. Populate Days (Since Year/Month are current, start from tDay)
+            updateDaysWheel(true); 
+
+            // Add Scroll Listeners
+            setupWheelListeners();
+        }
+
+        function setupWheelListeners() {
+            // Year Scroll: Updates Month Wheel limits
+            const yEl = document.getElementById('wheelYear');
+            yEl.addEventListener('scroll', () => {
+                const index = Math.round(yEl.scrollTop / 28);
+                updateWheelSelection(yEl, index);
+                
+                clearTimeout(wheelDebounce);
+                wheelDebounce = setTimeout(() => {
+                    updateMonthsWheel(); // Re-evaluate available months
+                    updateDaysWheel();   // Re-evaluate available days
+                }, 100);
+            });
+
+            // Month Scroll: Updates Day Wheel limits
+            const mEl = document.getElementById('wheelMonth');
+            mEl.addEventListener('scroll', () => {
+                const index = Math.round(mEl.scrollTop / 28);
+                updateWheelSelection(mEl, index);
+                
+                clearTimeout(wheelDebounce);
+                wheelDebounce = setTimeout(() => {
+                    updateDaysWheel(); // Re-evaluate available days
+                }, 100);
+            });
+
+            // Day Scroll: Just updates selection style
+            const dEl = document.getElementById('wheelDay');
+            dEl.addEventListener('scroll', () => {
+                const index = Math.round(dEl.scrollTop / 28);
+                updateWheelSelection(dEl, index);
             });
         }
 
-        function validateMonthLimit() {
-            const yEl = document.getElementById('wheelYear');
-            const mEl = document.getElementById('wheelMonth');
-            const yIndex = Math.round(yEl.scrollTop / 28);
-            const year = (yEl.children[yIndex]) ? parseInt(yEl.children[yIndex].dataset.value) : 0;
+        // Helper to get currently selected value from a wheel
+        function getSelectedValue(elementId) {
+            const el = document.getElementById(elementId);
+            const index = Math.round(el.scrollTop / 28);
+            return el.children[index] ? parseInt(el.children[index].dataset.value) : null;
+        }
 
-            if (year === 2026) {
-                const mIndex = Math.round(mEl.scrollTop / 28);
-                const month = (mEl.children[mIndex]) ? parseInt(mEl.children[mIndex].dataset.value) : 0;
-                if (month > 5) { // June is 5
-                    mEl.scrollTop = 5 * 28;
-                    updateWheelSelection(mEl, 5);
-                }
+        function updateMonthsWheel() {
+            const today = new Date();
+            const tYear = today.getFullYear();
+            const tMonth = today.getMonth(); // 0-11
+            
+            const selectedYear = getSelectedValue('wheelYear');
+            if (!selectedYear) return;
+
+            // Determine Start/End Months based on selected Year
+            let startMonth = 0;
+            let endMonth = 11;
+
+            if (selectedYear === tYear) {
+                startMonth = tMonth; // Don't show past months
+            } else if (selectedYear === 2026) {
+                endMonth = 5; // Cap at June 2026
             }
+
+            // Get currently selected month to see if we can preserve it
+            let currentSelection = getSelectedValue('wheelMonth');
+            
+            // Repopulate
+            populateWheel('wheelMonth', startMonth, endMonth, currentSelection, monthNames);
+            
+            // If previous selection is out of bounds (e.g., was Jan, now Min is May), populateWheel handles auto-select logic
         }
 
         function updateDaysWheel(force = false) {
-            const mEl = document.getElementById('wheelMonth');
-            const yEl = document.getElementById('wheelYear');
+            const today = new Date();
+            const tYear = today.getFullYear();
+            const tMonth = today.getMonth();
+            const tDay = today.getDate();
+
+            const selectedYear = getSelectedValue('wheelYear');
+            const selectedMonth = getSelectedValue('wheelMonth'); // This might be null while repopulating
+
+            if (selectedYear === null || selectedMonth === null) return;
+
+            // Determine Days in this month
+            const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+            
+            let startDay = 1;
+            
+            // If it's the current year AND current month, start from today
+            if (selectedYear === tYear && selectedMonth === tMonth) {
+                startDay = tDay;
+            }
+
+            const currentSelection = getSelectedValue('wheelDay') || startDay;
+
             const dEl = document.getElementById('wheelDay');
-
-            const mIndex = Math.round(mEl.scrollTop / 28);
-            const month = (mEl.children[mIndex]) ? parseInt(mEl.children[mIndex].dataset.value) : 0;
-
-            const yIndex = Math.round(yEl.scrollTop / 28);
-            const year = (yEl.children[yIndex]) ? parseInt(yEl.children[yIndex].dataset.value) : new Date().getFullYear();
-
-            const maxDays = new Date(year, month + 1, 0).getDate();
-
-            const dIndex = Math.round(dEl.scrollTop / 28);
-            let currentDay = (dEl.children[dIndex]) ? parseInt(dEl.children[dIndex].dataset.value) : 1;
-
-            if (!force && dEl.children.length === maxDays) return;
-
-            if (currentDay > maxDays) currentDay = maxDays;
-            if (currentDay < 1) currentDay = 1;
-
-            populateWheel('wheelDay', 1, maxDays, currentDay);
+            // Optimization: Only repopulate if limits changed or force is true
+            // But checking limits is complex with DOM, so we repopulate (it's fast enough)
+            populateWheel('wheelDay', startDay, daysInMonth, currentSelection);
         }
 
-        function populateWheel(elementId, start, end, selected, labels = null) {
+        function populateWheel(elementId, start, end, targetSelection, labels = null) {
             const container = document.getElementById(elementId);
+            
+            // Check if we need to preserve selection that might be out of new bounds
+            // If targetSelection < start, select start. If > end, select end.
+            let safeSelection = targetSelection;
+            if (safeSelection < start) safeSelection = start;
+            if (safeSelection > end) safeSelection = end;
+
             container.innerHTML = '';
+            
+            let scrollToIndex = 0;
             let index = 0;
+
             for (let i = start; i <= end; i++) {
                 const div = document.createElement('div');
                 div.className = 'wheel-item text-stone-500';
                 div.textContent = labels ? labels[i] : i;
                 div.dataset.value = i;
                 container.appendChild(div);
-                if (i === selected) {
-                    setTimeout(() => { 
-                        container.scrollTop = index * 28; 
-                        updateWheelSelection(container, index); 
-                    }, 0);
+                
+                if (i === safeSelection) {
+                    scrollToIndex = index;
                 }
                 index++;
             }
+
+            // Snap to the safe selection
+            // We use setTimeout to allow DOM reflow
+            setTimeout(() => { 
+                container.scrollTop = scrollToIndex * 28; 
+                updateWheelSelection(container, scrollToIndex); 
+            }, 0);
         }
 
         function updateWheelSelection(container, index) {
@@ -627,12 +700,9 @@
         function toggleDatePicker() { dateWheelPopover.classList.toggle('hidden'); }
 
         function checkWheelDate() {
-            const getVal = (id) => {
-                const el = document.getElementById(id);
-                const index = Math.round(el.scrollTop / 28);
-                return el.children[index] ? parseInt(el.children[index].dataset.value) : null;
-            };
-            const d = getVal('wheelDay'), m = getVal('wheelMonth'), y = getVal('wheelYear');
+            const d = getSelectedValue('wheelDay');
+            const m = getSelectedValue('wheelMonth');
+            const y = getSelectedValue('wheelYear');
             
             if (d === null || m === null || y === null) return;
 
@@ -643,7 +713,10 @@
             quickDateStatus.classList.remove('hidden');
             
             const today = new Date(); today.setHours(0, 0, 0, 0); date.setHours(0, 0, 0, 0);
+            
+            // With new logic, isPast should rarely be true via wheel, but keep check for safety
             const isPast = date < today;
+            
             const isBooked = allEvents.some(e => {
                 const eStart = new Date(e.startDate); eStart.setHours(0, 0, 0, 0);
                 return date.getTime() === eStart.getTime();
