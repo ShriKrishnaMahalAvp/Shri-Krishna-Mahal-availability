@@ -66,13 +66,21 @@
           STICKY FLOATING HERO HEADER
           ========================================== -->
     <header class="fixed top-0 left-0 right-0 md:max-w-3xl md:mx-auto z-50 bg-stone-900 shadow-2xl border border-stone-800/50 backdrop-blur-md bg-opacity-95 rounded-b-3xl">
-        <div class="px-4 py-3 text-center">
+        <div class="px-4 py-3 text-center relative">
+            
+            <!-- BETA BADGE: Absolute Top-Right (For Tablets/Desktop) -->
+            <div class="absolute top-3 right-4 hidden sm:block">
+                 <span class="text-[8px] font-mono text-amber-500 font-semibold tracking-widest border border-amber-500/50 px-2 py-1 rounded bg-amber-950/30">Preview mode: BETA 1.0</span>
+            </div>
+            
             <h1 class="text-2xl md:text-3xl font-bold text-amber-500 tracking-wide royal-font header-text-shadow">
                 Shri Krishna Mahal
             </h1>
-            <div class="flex items-center justify-center gap-2 mt-1">
-                <p class="text-stone-400 text-[10px] md:text-xs uppercase tracking-[0.2em]">Royal Grand Hall</p>
-                <span class="px-1.5 py-0.5 border border-amber-500/30 rounded-full text-[8px] text-amber-500 font-medium tracking-normal bg-amber-500/5 backdrop-blur-sm">Preview mode: BETA 1.0</span>
+            <p class="text-stone-400 text-[10px] md:text-xs uppercase tracking-[0.2em] mt-0.5">Royal Grand Hall</p>
+
+            <!-- Mobile Only Badge (Centered below for very small screens) -->
+            <div class="block sm:hidden mt-2">
+                <span class="text-[8px] font-mono text-amber-500 font-semibold tracking-widest border border-amber-500/50 px-2 py-1 rounded bg-amber-950/30">Preview mode: BETA 1.0</span>
             </div>
         </div>
     </header>
@@ -277,7 +285,7 @@
                 <div class="bg-stone-800 p-1 rounded-full text-amber-500 flex-shrink-0">
                     <i class="ph ph-map-pin"></i>
                 </div>
-                <span class="truncate">Kangayam Road, Avinashipalayam</span>
+                <span class="truncate underline">Trichy Road, Avinashipalayam</span>
             </a>
         </div>
     </footer>
