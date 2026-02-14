@@ -65,17 +65,14 @@
           STICKY HEADER (Animated & Fixed)
           ========================================== -->
     <header id="sticky-header" class="fixed top-0 w-full md:max-w-3xl left-1/2 -translate-x-1/2 z-50 bg-stone-900 shadow-2xl border-b border-stone-800/50 rounded-b-3xl transition-all duration-300 ease-in-out py-6">
-        <!-- Added min-h-[24px] to ensure vertical center alignment stability -->
         <div class="px-4 relative flex flex-col items-center justify-center min-h-[24px]">
             
-            <!-- BETA BADGE: UPDATED to hide long text on mobile -->
-            <div id="header-badge" class="absolute top-0 right-4 h-full flex items-center transition-all duration-300">
+            <div id="header-badge" class="relative sm:absolute sm:top-0 sm:right-4 sm:h-full flex items-center justify-center mb-2 sm:mb-0 transition-all duration-300">
                 <span class="text-[8px] font-mono text-amber-500 font-semibold tracking-widest border border-amber-500/50 px-2 py-1 rounded bg-stone-800/50 whitespace-nowrap shadow-lg backdrop-blur-sm">
-                    <span class="hidden sm:inline">Preview mode: </span>BETA 1.0
+                    Preview mode: BETA 1.0
                 </span>
             </div>
 
-            <!-- TITLE BLOCK: UPDATED font size -->
             <div id="header-title" class="text-center transition-all duration-300 ease-in-out origin-top overflow-hidden opacity-100 max-h-24">
                 <h1 class="text-lg md:text-2xl font-bold text-amber-500 tracking-wide royal-font header-text-shadow">
                     Shri Krishna Mahal
@@ -828,3 +825,4 @@
     </script>
 </body>
 </html>
+
