@@ -477,11 +477,9 @@
             if (newMonth > 11) { newMonth = 0; newYear++; } 
             else if (newMonth < 0) { newMonth = 11; newYear--; }
 
-            // Allow navigation to past in Grid View for reference, or restrict?
-            // Current Logic: Restrict prior to "Now" in Grid View too? 
-            // Let's keep grid view flexible but ensure "Update upto June 2026" logic holds
-            
-            if (newYear > 2026) return; // Cap at 2026
+            // Logic: Updated only upto June 2026
+            if (newYear > 2026) return; 
+            if (newYear === 2026 && newMonth > 5) return; // Cap at June 2026
             
             currentMonth = newMonth;
             currentYear = newYear;
@@ -548,7 +546,11 @@
             populateWheel('wheelYear', tYear, 2026, tYear);
 
             // 2. Populate Months (Since Year is current, start from tMonth)
-            populateWheel('wheelMonth', tMonth, 11, tMonth, monthNames);
+            let maxMonth = 11;
+            if (tYear === 2026) {
+                maxMonth = 5; // Cap at June if current year is 2026
+            }
+            populateWheel('wheelMonth', tMonth, maxMonth, tMonth, monthNames);
 
             // 3. Populate Days (Since Year/Month are current, start from tDay)
             updateDaysWheel(true); 
@@ -612,8 +614,11 @@
 
             if (selectedYear === tYear) {
                 startMonth = tMonth; // Don't show past months
-            } else if (selectedYear === 2026) {
-                endMonth = 5; // Cap at June 2026
+            }
+            
+            // Check for 2026 cap (June/Month 5) regardless of whether it matches tYear
+            if (selectedYear === 2026) {
+                endMonth = 5; 
             }
 
             // Get currently selected month to see if we can preserve it
@@ -621,8 +626,6 @@
             
             // Repopulate
             populateWheel('wheelMonth', startMonth, endMonth, currentSelection, monthNames);
-            
-            // If previous selection is out of bounds (e.g., was Jan, now Min is May), populateWheel handles auto-select logic
         }
 
         function updateDaysWheel(force = false) {
