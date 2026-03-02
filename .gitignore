@@ -1,17 +1,11 @@
-# Node.js
-node_modules/
+# Secret configuration files - never commit these to GitHub
+config.js
 
-# Logs
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Common ignores
+# Common OS files
 .DS_Store
 Thumbs.db
-*.env
 
-# config.js
-config.js
+# IDE
+.vscode/
+.idea/
+*.swp
